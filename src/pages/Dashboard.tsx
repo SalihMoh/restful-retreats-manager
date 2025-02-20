@@ -17,9 +17,10 @@ const Dashboard = () => {
   const { user } = useSelector((state: RootState) => state.auth);
   const { bookings } = useSelector((state: RootState) => state.bookings);
   const [selectedHotel, setSelectedHotel] = useState<number | null>(null);
-  const [startDate, setStartDate] = useState<Date | null>(null);
-  const [endDate, setEndDate] = useState<Date | null>(null);
-  const [guestName, setGuestName] = useState('');
+  const [checkInDate, setCheckInDate] = useState<Date | null>(null);
+  const [checkOutDate, setCheckOutDate] = useState<Date | null>(null);
+  const [guestCount, setGuestCount] = useState(1);
+  const [specialRequests, setSpecialRequests] = useState('');
   const { toast } = useToast();
 
   useEffect(() => {
@@ -29,7 +30,7 @@ const Dashboard = () => {
     }
   }, [dispatch, user]);
 
-  const calculateTotalCost = (hotelId: number, start: Date, end: Date) => {
+  const calculateTotalPrice = (hotelId: number, start: Date, end: Date) => {
     const hotel = hotels.find(h => h.id === hotelId);
     if (!hotel) return 0;
     const days = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
@@ -37,18 +38,19 @@ const Dashboard = () => {
   };
 
   const handleBooking = async () => {
-    if (!selectedHotel || !startDate || !endDate || !user) return;
+    if (!selectedHotel || !checkInDate || !checkOutDate || !user) return;
 
-    const totalCost = calculateTotalCost(selectedHotel, startDate, endDate);
+    const totalPrice = calculateTotalPrice(selectedHotel, checkInDate, checkOutDate);
 
     try {
       await dispatch(createBooking({
         userId: user.id,
         hotelId: selectedHotel,
-        startDate: startDate.toISOString(),
-        endDate: endDate.toISOString(),
-        totalCost,
-        guestName: guestName || user.name,
+        checkIn: checkInDate.toISOString().split('T')[0],
+        checkOut: checkOutDate.toISOString().split('T')[0],
+        totalPrice,
+        guestCount,
+        specialRequests
       })).unwrap();
 
       toast({
@@ -57,9 +59,10 @@ const Dashboard = () => {
       });
 
       setSelectedHotel(null);
-      setStartDate(null);
-      setEndDate(null);
-      setGuestName('');
+      setCheckInDate(null);
+      setCheckOutDate(null);
+      setGuestCount(1);
+      setSpecialRequests('');
     } catch (error) {
       toast({
         title: "Error",
@@ -120,11 +123,11 @@ const Dashboard = () => {
                 <div>
                   <label className="block text-sm font-medium mb-2">Check-in Date</label>
                   <DatePicker
-                    selected={startDate}
-                    onChange={setStartDate}
+                    selected={checkInDate}
+                    onChange={setCheckInDate}
                     selectsStart
-                    startDate={startDate}
-                    endDate={endDate}
+                    startDate={checkInDate}
+                    endDate={checkOutDate}
                     minDate={new Date()}
                     className="w-full rounded-md border border-input px-3 py-2"
                     placeholderText="Select check-in date"
@@ -133,34 +136,44 @@ const Dashboard = () => {
                 <div>
                   <label className="block text-sm font-medium mb-2">Check-out Date</label>
                   <DatePicker
-                    selected={endDate}
-                    onChange={setEndDate}
+                    selected={checkOutDate}
+                    onChange={setCheckOutDate}
                     selectsEnd
-                    startDate={startDate}
-                    endDate={endDate}
-                    minDate={startDate}
+                    startDate={checkInDate}
+                    endDate={checkOutDate}
+                    minDate={checkInDate}
                     className="w-full rounded-md border border-input px-3 py-2"
                     placeholderText="Select check-out date"
                   />
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-medium mb-2">Guest Name</label>
+                <label className="block text-sm font-medium mb-2">Number of Guests</label>
                 <Input
-                  value={guestName}
-                  onChange={(e) => setGuestName(e.target.value)}
-                  placeholder="Enter guest name (if booking for someone else)"
+                  type="number"
+                  min="1"
+                  value={guestCount}
+                  onChange={(e) => setGuestCount(parseInt(e.target.value))}
+                  placeholder="Enter number of guests"
                 />
               </div>
-              {startDate && endDate && (
+              <div>
+                <label className="block text-sm font-medium mb-2">Special Requests</label>
+                <Input
+                  value={specialRequests}
+                  onChange={(e) => setSpecialRequests(e.target.value)}
+                  placeholder="Any special requests?"
+                />
+              </div>
+              {checkInDate && checkOutDate && (
                 <div className="text-lg font-semibold">
-                  Total Cost: ${calculateTotalCost(selectedHotel, startDate, endDate)}
+                  Total Cost: ${calculateTotalPrice(selectedHotel, checkInDate, checkOutDate)}
                 </div>
               )}
               <Button
                 onClick={handleBooking}
                 className="w-full"
-                disabled={!startDate || !endDate}
+                disabled={!checkInDate || !checkOutDate}
               >
                 Confirm Booking
               </Button>
@@ -186,14 +199,20 @@ const Dashboard = () => {
                         <div>
                           <h3 className="font-semibold">{hotel?.name}</h3>
                           <p className="text-sm text-muted-foreground">
-                            Guest: {booking.guestName}
+                            Guests: {booking.guestCount}
                           </p>
                           <p className="text-sm text-muted-foreground">
-                            {new Date(booking.startDate).toLocaleDateString()} - {new Date(booking.endDate).toLocaleDateString()}
+                            {new Date(booking.checkIn).toLocaleDateString()} - {new Date(booking.checkOut).toLocaleDateString()}
                           </p>
+                          {booking.specialRequests && (
+                            <p className="text-sm text-muted-foreground">
+                              Special Requests: {booking.specialRequests}
+                            </p>
+                          )}
                         </div>
                         <div className="text-right">
-                          <p className="font-semibold">${booking.totalCost}</p>
+                          <p className="font-semibold">${booking.totalPrice}</p>
+                          <p className="text-sm text-muted-foreground">Status: {booking.status}</p>
                         </div>
                       </div>
                     </div>
