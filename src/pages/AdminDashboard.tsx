@@ -153,15 +153,86 @@ const AdminDashboard = () => {
                 <Input
                   name="image"
                   value={formData.image}
-                
+                  onChange={handleInputChange}
+                  placeholder="Image URL"
+                  required
+                />
+              </div>
+              <Textarea
+                name="description"
+                value={formData.description}
+                onChange={handleInputChange}
+                placeholder="Hotel Description"
+                className="min-h-[100px]"
+                required
+              />
+              <Input
+                name="amenities"
+                value={formData.amenities}
+                onChange={handleInputChange}
+                placeholder="Amenities (comma-separated)"
+                required
+              />
+              <div className="flex gap-2">
+                <Button type="submit">
+                  {editingHotel ? 'Update Hotel' : 'Add Hotel'}
+                </Button>
+                {editingHotel && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={resetForm}
+                  >
+                    Cancel
+                  </Button>
+                )}
+              </div>
+            </form>
+          </CardContent>
+        </Card>
 
-If there's knowledge, context or custom instructions you want to include in every edit in this project, set it below.
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {hotels.map((hotel) => (
+            <Card key={hotel.id} className="hoverable-card overflow-hidden">
+              <img
+                src={hotel.image}
+                alt={hotel.name}
+                className="w-full h-48 object-cover"
+              />
+              <CardHeader>
+                <CardTitle>{hotel.name}</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-muted-foreground mb-4">{hotel.description}</p>
+                <p className="text-lg font-semibold mb-4">${hotel.price} / night</p>
+                <div className="flex flex-wrap gap-2 mb-4">
+                  {hotel.amenities.map((amenity) => (
+                    <span
+                      key={amenity}
+                      className="px-2 py-1 bg-primary/10 text-primary rounded-full text-sm"
+                    >
+                      {amenity}
+                    </span>
+                  ))}
+                </div>
+                <div className="flex gap-2">
+                  <Button onClick={() => handleEdit(hotel)} variant="outline">
+                    Edit
+                  </Button>
+                  <Button
+                    onClick={() => handleDelete(hotel.id)}
+                    variant="destructive"
+                  >
+                    Delete
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+};
 
-<lov-actions>
-<lov-knowledge>
-</lov-actions>
-
-Since you'll be using json-server for your backend, you won't need Supabase for this project.  If you decide to use a different backend solution later, you can use the Supabase menu on the top right to connect your project to Supabase.
-<lov-actions>
-<lov-message-prompt message="Tell me more about Supabase">Learn more about Supabase</lov-message-prompt>
-</lov-actions>
+export default AdminDashboard;
