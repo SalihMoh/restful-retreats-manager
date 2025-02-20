@@ -14,14 +14,21 @@ const Login = () => {
   const [password, setPassword] = useState('');
   const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
-  const { status, error } = useSelector((state: RootState) => state.auth);
+  const { status } = useSelector((state: RootState) => state.auth);
   const { toast } = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
     try {
       const resultAction = await dispatch(login({ email, password })).unwrap();
-      navigate(resultAction.role === 'admin' ? '/admin' : '/dashboard');
+      if (resultAction) {
+        toast({
+          title: "Success",
+          description: "Logged in successfully!",
+        });
+        navigate(resultAction.role === 'admin' ? '/admin' : '/dashboard');
+      }
     } catch (err) {
       toast({
         title: "Error",

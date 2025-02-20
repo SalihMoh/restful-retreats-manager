@@ -17,19 +17,9 @@ const Register = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      // Check if user already exists
-      const checkUser = await api.get(`/users?email=${email}`);
-      if (checkUser.data.length > 0) {
-        toast({
-          title: "Error",
-          description: "User already exists. Please login instead.",
-          variant: "destructive",
-        });
-        return;
-      }
-
       // Create new user
       await api.post('/users', {
+        id: Date.now(), // Generate a unique ID
         email,
         password,
         name,
@@ -70,7 +60,7 @@ const Register = () => {
             </div>
             <div className="space-y-2">
               <Input
-                type="email"
+                type="text"
                 placeholder="Email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
