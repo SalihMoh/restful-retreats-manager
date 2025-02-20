@@ -1,31 +1,50 @@
 
 import { useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import { login } from '../store/authSlice';
-import { AppDispatch, RootState } from '../store/store';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
+import api from '../lib/axios';
 
-const Login = () => {
+const Register = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const dispatch = useDispatch<AppDispatch>();
+  const [name, setName] = useState('');
   const navigate = useNavigate();
-  const { status, error } = useSelector((state: RootState) => state.auth);
   const { toast } = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const resultAction = await dispatch(login({ email, password })).unwrap();
-      navigate(resultAction.role === 'admin' ? '/admin' : '/dashboard');
-    } catch (err) {
+      // Check if user already exists
+      const checkUser = await api.get(`/users?email=${email}`);
+      if (checkUser.data.length > 0) {
+        toast({
+          title: "Error",
+          description: "User already exists. Please login instead.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Create new user
+      await api.post('/users', {
+        email,
+        password,
+        name,
+        role: 'user',
+      });
+
+      toast({
+        title: "Success",
+        description: "Registration successful! Please login.",
+      });
+      navigate('/login');
+    } catch (error) {
       toast({
         title: "Error",
-        description: "Invalid credentials. Please try again.",
+        description: "Registration failed. Please try again.",
         variant: "destructive",
       });
     }
@@ -35,13 +54,23 @@ const Login = () => {
     <div className="min-h-screen flex items-center justify-center bg-secondary">
       <Card className="w-full max-w-md p-6 bg-white/80 backdrop-blur-sm">
         <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl font-bold text-center">Sign In</CardTitle>
+          <CardTitle className="text-2xl font-bold text-center">Create Account</CardTitle>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
               <Input
                 type="text"
+                placeholder="Full Name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                className="w-full"
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Input
+                type="email"
                 placeholder="Email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
@@ -59,17 +88,13 @@ const Login = () => {
                 required
               />
             </div>
-            <Button
-              type="submit"
-              className="w-full"
-              disabled={status === 'loading'}
-            >
-              {status === 'loading' ? 'Signing in...' : 'Sign In'}
+            <Button type="submit" className="w-full">
+              Sign Up
             </Button>
             <div className="text-center text-sm text-muted-foreground">
-              Don't have an account?{' '}
-              <Button variant="link" className="p-0" onClick={() => navigate('/register')}>
-                Sign Up
+              Already have an account?{' '}
+              <Button variant="link" className="p-0" onClick={() => navigate('/login')}>
+                Sign In
               </Button>
             </div>
           </form>
@@ -79,4 +104,4 @@ const Login = () => {
   );
 };
 
-export default Login;
+export default Register;

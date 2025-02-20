@@ -3,17 +3,10 @@
   "users": [
     {
       "id": 1,
-      "email": "admin@hotels.com",
-      "password": "admin123",
+      "email": "admin",
+      "password": "admin",
       "role": "admin",
       "name": "Admin User"
-    },
-    {
-      "id": 2,
-      "email": "user@example.com",
-      "password": "user123",
-      "role": "user",
-      "name": "John Doe"
     }
   ],
   "hotels": [
@@ -24,7 +17,18 @@
       "price": 450,
       "image": "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800&auto=format&fit=crop",
       "location": "Maldives",
-      "amenities": ["Pool", "Spa", "Restaurant", "Beach Access"]
+      "rating": 4.8,
+      "amenities": ["Pool", "Spa", "Restaurant", "Beach Access", "Free Wi-Fi", "Room Service"]
+    },
+    {
+      "id": 2,
+      "name": "Mountain View Lodge",
+      "description": "A cozy retreat nestled in the heart of the mountains.",
+      "price": 280,
+      "image": "https://images.unsplash.com/photo-1587061949409-02df41d5e562?w=800&auto=format&fit=crop",
+      "location": "Swiss Alps",
+      "rating": 4.6,
+      "amenities": ["Fireplace", "Hiking Trails", "Spa", "Restaurant", "Free Wi-Fi"]
     }
   ],
   "bookings": []
