@@ -32,6 +32,19 @@ export const login = createAsyncThunk(
   }
 );
 
+export const register = createAsyncThunk(
+  'auth/register',
+  async ({ name, email, password }: { name: string; email: string; password: string }) => {
+    const response = await api.post('/users', {
+      name,
+      email,
+      password,
+      role: 'user'
+    });
+    return response.data;
+  }
+);
+
 const authSlice = createSlice({
   name: 'auth',
   initialState,
@@ -54,6 +67,16 @@ const authSlice = createSlice({
       .addCase(login.rejected, (state, action) => {
         state.status = 'failed';
         state.error = action.error.message || 'Login failed';
+      })
+      .addCase(register.pending, (state) => {
+        state.status = 'loading';
+      })
+      .addCase(register.fulfilled, (state) => {
+        state.status = 'succeeded';
+      })
+      .addCase(register.rejected, (state, action) => {
+        state.status = 'failed';
+        state.error = action.error.message || 'Registration failed';
       });
   },
 });
