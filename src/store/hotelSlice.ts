@@ -1,16 +1,7 @@
 
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import api from '../lib/axios';
-
-interface Hotel {
-  id: number;
-  name: string;
-  description: string;
-  price: number;
-  image: string;
-  location: string;
-  amenities: string[];
-}
+import { Hotel } from '@/types/hotel';
 
 interface HotelState {
   hotels: Hotel[];
