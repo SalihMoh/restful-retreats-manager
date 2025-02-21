@@ -13,42 +13,31 @@ import { QueryClient } from "@tanstack/react-query";
 
 const queryClient = new QueryClient();
 
-// Set this to true to bypass authentication (for development)
-const BYPASS_AUTH = true;
-
 const App = () => (
   <Provider store={store}>
     <QueryClientProvider client={queryClient}>
       <Toaster />
       <BrowserRouter>
         <Routes>
-          <Route path="/login" element={BYPASS_AUTH ? <Navigate to="/dashboard" replace /> : <Login />} />
-          <Route path="/register" element={BYPASS_AUTH ? <Navigate to="/dashboard" replace /> : <Register />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
           <Route
             path="/dashboard"
             element={
-              BYPASS_AUTH ? (
+              <ProtectedRoute role="user">
                 <Dashboard />
-              ) : (
-                <ProtectedRoute role="user">
-                  <Dashboard />
-                </ProtectedRoute>
-              )
+              </ProtectedRoute>
             }
           />
           <Route
             path="/admin"
             element={
-              BYPASS_AUTH ? (
+              <ProtectedRoute role="admin">
                 <AdminDashboard />
-              ) : (
-                <ProtectedRoute role="admin">
-                  <AdminDashboard />
-                </ProtectedRoute>
-              )
+              </ProtectedRoute>
             }
           />
-          <Route path="/" element={<Navigate to="/dashboard" replace />} />
+          <Route path="/" element={<Navigate to="/login" replace />} />
         </Routes>
       </BrowserRouter>
     </QueryClientProvider>

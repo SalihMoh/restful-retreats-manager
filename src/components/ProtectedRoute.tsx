@@ -11,10 +11,6 @@ interface ProtectedRouteProps {
 const ProtectedRoute = ({ children, role }: ProtectedRouteProps) => {
   const { user } = useSelector((state: RootState) => state.auth);
 
-  // If auth is bypassed, allow access
-  const BYPASS_AUTH = true;
-  if (BYPASS_AUTH) return <>{children}</>;
-
   if (!user) {
     return <Navigate to="/login" replace />;
   }

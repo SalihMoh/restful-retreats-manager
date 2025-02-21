@@ -3,10 +3,17 @@
   "users": [
     {
       "id": 1,
-      "email": "admin",
-      "password": "admin",
+      "email": "admin@admin.com",
+      "password": "admin123",
       "role": "admin",
       "name": "Admin User"
+    },
+    {
+      "id": 2,
+      "email": "user@user.com",
+      "password": "user123",
+      "role": "user",
+      "name": "Regular User"
     }
   ],
   "hotels": [
@@ -31,59 +38,13 @@
       "rating": 4.6,
       "amenities": ["Fireplace", "Hiking Trails", "Spa", "Restaurant", "Free Wi-Fi"],
       "availableRooms": 10
-    },
-    {
-      "id": 3,
-      "name": "Beachfront Paradise",
-      "description": "Direct beach access with stunning ocean views.",
-      "price": 350,
-      "image": "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=800&auto=format&fit=crop",
-      "location": "Bali",
-      "rating": 4.7,
-      "amenities": ["Private Beach", "Infinity Pool", "Spa", "Water Sports", "Free Wi-Fi"],
-      "availableRooms": 20
-    },
-    {
-      "id": 4,
-      "name": "Urban Boutique Hotel",
-      "description": "Modern luxury in the heart of the city.",
-      "price": 200,
-      "image": "https://images.unsplash.com/photo-1551882547-ff40c63fe5fa?w=800&auto=format&fit=crop",
-      "location": "New York",
-      "rating": 4.5,
-      "amenities": ["Gym", "Restaurant", "Business Center", "Free Wi-Fi", "Valet Parking"],
-      "availableRooms": 25
     }
   ],
-  "bookings": [
-    {
-      "id": 1,
-      "userId": 1,
-      "hotelId": 1,
-      "checkIn": "2024-03-15",
-      "checkOut": "2024-03-20",
-      "totalPrice": 2250,
-      "status": "confirmed",
-      "guestCount": 2,
-      "specialRequests": "Late check-in",
-      "createdAt": "2024-02-20"
-    }
-  ],
-  "reviews": [
-    {
-      "id": 1,
-      "userId": 1,
-      "hotelId": 1,
-      "rating": 5,
-      "comment": "Amazing experience! The service was impeccable.",
-      "date": "2024-02-15"
-    }
-  ],
-  "favorites": [
-    {
-      "id": 1,
-      "userId": 1,
-      "hotelId": 1
-    }
-  ]
+  "bookings": [],
+  "statistics": {
+    "totalBookings": 0,
+    "totalRevenue": 0,
+    "averageRating": 4.7,
+    "occupancyRate": 75
+  }
 }

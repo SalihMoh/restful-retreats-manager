@@ -8,28 +8,36 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-
-interface HotelFormData {
-  name: string;
-  description: string;
-  price: string;
-  image: string;
-  location: string;
-  amenities: string;
-}
+import { Search } from 'lucide-react';
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+  PieChart,
+  Pie,
+  Cell
+} from 'recharts';
 
 const AdminDashboard = () => {
   const dispatch = useDispatch<AppDispatch>();
   const { hotels } = useSelector((state: RootState) => state.hotels);
   const [editingHotel, setEditingHotel] = useState<number | null>(null);
   const { toast } = useToast();
-  const [formData, setFormData] = useState<HotelFormData>({
+  const [searchTerm, setSearchTerm] = useState('');
+  const [formData, setFormData] = useState({
     name: '',
     description: '',
     price: '',
     image: '',
     location: '',
     amenities: '',
+    rating: '',
+    availableRooms: ''
   });
 
   useEffect(() => {
@@ -49,6 +57,8 @@ const AdminDashboard = () => {
       image: '',
       location: '',
       amenities: '',
+      rating: '',
+      availableRooms: ''
     });
     setEditingHotel(null);
   };
@@ -62,6 +72,8 @@ const AdminDashboard = () => {
       image: formData.image,
       location: formData.location,
       amenities: formData.amenities.split(',').map(item => item.trim()),
+      rating: parseFloat(formData.rating),
+      availableRooms: parseInt(formData.availableRooms)
     };
 
     try {
@@ -97,6 +109,8 @@ const AdminDashboard = () => {
       image: hotel.image,
       location: hotel.location,
       amenities: hotel.amenities.join(', '),
+      rating: hotel.rating.toString(),
+      availableRooms: hotel.availableRooms.toString()
     });
   };
 
@@ -116,11 +130,121 @@ const AdminDashboard = () => {
     }
   };
 
+  const filteredHotels = hotels.filter(hotel =>
+    hotel.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    hotel.location.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const statistics = {
+    totalHotels: hotels.length,
+    averagePrice: hotels.reduce((acc, hotel) => acc + hotel.price, 0) / hotels.length,
+    totalRooms: hotels.reduce((acc, hotel) => acc + hotel.availableRooms, 0),
+    averageRating: hotels.reduce((acc, hotel) => acc + hotel.rating, 0) / hotels.length
+  };
+
+  const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'];
+
   return (
     <div className="min-h-screen bg-secondary p-8">
       <div className="max-w-7xl mx-auto space-y-8">
-        <h1 className="text-4xl font-bold text-center mb-12">Hotel Management</h1>
+        <h1 className="text-4xl font-bold text-center mb-12">Hotel Management Dashboard</h1>
 
+        {/* Statistics Section */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+          <Card>
+            <CardHeader>
+              <CardTitle>Total Hotels</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-3xl font-bold">{statistics.totalHotels}</p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader>
+              <CardTitle>Average Price</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-3xl font-bold">${statistics.averagePrice.toFixed(2)}</p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader>
+              <CardTitle>Total Rooms</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-3xl font-bold">{statistics.totalRooms}</p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader>
+              <CardTitle>Average Rating</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-3xl font-bold">{statistics.averageRating.toFixed(1)} ⭐</p>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Charts Section */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+          <Card>
+            <CardHeader>
+              <CardTitle>Price Distribution</CardTitle>
+            </CardHeader>
+            <CardContent className="h-[300px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={hotels}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="name" />
+                  <YAxis />
+                  <Tooltip />
+                  <Legend />
+                  <Line type="monotone" dataKey="price" stroke="#8884d8" />
+                </LineChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader>
+              <CardTitle>Room Distribution</CardTitle>
+            </CardHeader>
+            <CardContent className="h-[300px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={hotels}
+                    dataKey="availableRooms"
+                    nameKey="name"
+                    cx="50%"
+                    cy="50%"
+                    outerRadius={80}
+                    label
+                  >
+                    {hotels.map((_, index) => (
+                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <Tooltip />
+                  <Legend />
+                </PieChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Search Bar */}
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+          <Input
+            type="text"
+            placeholder="Search hotels by name or location..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pl-10"
+          />
+        </div>
+
+        {/* Hotel Form */}
         <Card>
           <CardHeader>
             <CardTitle>{editingHotel ? 'Edit Hotel' : 'Add New Hotel'}</CardTitle>
@@ -157,6 +281,26 @@ const AdminDashboard = () => {
                   placeholder="Image URL"
                   required
                 />
+                <Input
+                  name="rating"
+                  type="number"
+                  min="0"
+                  max="5"
+                  step="0.1"
+                  value={formData.rating}
+                  onChange={handleInputChange}
+                  placeholder="Rating (0-5)"
+                  required
+                />
+                <Input
+                  name="availableRooms"
+                  type="number"
+                  min="0"
+                  value={formData.availableRooms}
+                  onChange={handleInputChange}
+                  placeholder="Available Rooms"
+                  required
+                />
               </div>
               <Textarea
                 name="description"
@@ -191,8 +335,9 @@ const AdminDashboard = () => {
           </CardContent>
         </Card>
 
+        {/* Hotels List */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {hotels.map((hotel) => (
+          {filteredHotels.map((hotel) => (
             <Card key={hotel.id} className="hoverable-card overflow-hidden">
               <img
                 src={hotel.image}
@@ -204,7 +349,10 @@ const AdminDashboard = () => {
               </CardHeader>
               <CardContent>
                 <p className="text-muted-foreground mb-4">{hotel.description}</p>
-                <p className="text-lg font-semibold mb-4">${hotel.price} / night</p>
+                <p className="text-lg font-semibold mb-2">${hotel.price} / night</p>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Rating: {hotel.rating} ⭐ | Available Rooms: {hotel.availableRooms}
+                </p>
                 <div className="flex flex-wrap gap-2 mb-4">
                   {hotel.amenities.map((amenity) => (
                     <span
