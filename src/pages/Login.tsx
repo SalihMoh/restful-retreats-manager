@@ -1,35 +1,30 @@
 
 import { useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
+import { useDispatch } from 'react-redux';
 import { login } from '../store/authSlice';
-import { AppDispatch, RootState } from '../store/store';
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
+import { Hotel } from 'lucide-react';
 
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
-  const { status } = useSelector((state: RootState) => state.auth);
+  const dispatch = useDispatch();
   const { toast } = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
     try {
-      const resultAction = await dispatch(login({ email, password })).unwrap();
-      if (resultAction) {
-        toast({
-          title: "Success",
-          description: "Logged in successfully!",
-        });
-        navigate(resultAction.role === 'admin' ? '/admin' : '/dashboard');
-      }
-    } catch (err) {
+      await dispatch(login({ email, password })).unwrap();
+      toast({
+        title: "Success",
+        description: "Welcome back!",
+      });
+    } catch (error) {
       toast({
         title: "Error",
         description: "Invalid credentials. Please try again.",
@@ -39,45 +34,56 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-secondary">
-      <Card className="w-full max-w-md p-6 bg-white/80 backdrop-blur-sm">
-        <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl font-bold text-center">Sign In</CardTitle>
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/20 to-secondary p-4">
+      <Card className="w-full max-w-md">
+        <CardHeader className="space-y-4 text-center">
+          <div className="mx-auto w-12 h-12 bg-primary rounded-full flex items-center justify-center">
+            <Hotel className="w-6 h-6 text-white" />
+          </div>
+          <CardTitle className="text-2xl">Welcome Back</CardTitle>
+          <CardDescription>
+            Enter your credentials to access your account
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
+              <label className="text-sm font-medium">Email</label>
               <Input
-                type="text"
-                placeholder="Email"
+                type="email"
+                placeholder="Enter your email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full"
                 required
+                className="w-full"
               />
             </div>
             <div className="space-y-2">
+              <label className="text-sm font-medium">Password</label>
               <Input
                 type="password"
-                placeholder="Password"
+                placeholder="Enter your password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full"
                 required
+                className="w-full"
               />
             </div>
-            <Button
-              type="submit"
-              className="w-full"
-              disabled={status === 'loading'}
-            >
-              {status === 'loading' ? 'Signing in...' : 'Sign In'}
+            <Button type="submit" className="w-full">
+              Sign In
             </Button>
             <div className="text-center text-sm text-muted-foreground">
               Don't have an account?{' '}
-              <Button variant="link" className="p-0" onClick={() => navigate('/register')}>
-                Sign Up
-              </Button>
+              <Link to="/register" className="text-primary hover:underline">
+                Sign up
+              </Link>
+            </div>
+            <div className="text-center text-xs text-muted-foreground">
+              Demo Accounts:
+              <br />
+              Admin: admin@admin.com / admin123
+              <br />
+              User: user@user.com / user123
             </div>
           </form>
         </CardContent>
