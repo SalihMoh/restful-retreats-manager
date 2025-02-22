@@ -14,7 +14,6 @@ import {
   ResponsiveContainer, PieChart, Pie, Cell
 } from 'recharts';
 import { Hotel } from '@/types/hotel';
-import { WritableDraft } from 'immer/dist/internal';
 
 interface FormData {
   name: string;
@@ -147,11 +146,16 @@ const AdminDashboard = () => {
       imageUrl = hotel.image;
     } else if (hotel.image instanceof File) {
       imageUrl = URL.createObjectURL(hotel.image);
-    } else if (hotel.image && 'type' in (hotel.image as WritableDraft<File>)) {
-      // Handle WritableDraft<File> case
-      const fileData = hotel.image as unknown as WritableDraft<File>;
-      const file = new File([fileData], fileData.name, { type: fileData.type });
-      imageUrl = URL.createObjectURL(file);
+    } else if (hotel.image && typeof hotel.image === 'object' && 'type' in hotel.image) {
+      // Handle File-like object from Redux store
+      try {
+        const { name = 'file', type = 'application/octet-stream' } = hotel.image as any;
+        const file = new File([hotel.image], name, { type });
+        imageUrl = URL.createObjectURL(file);
+      } catch (e) {
+        console.error('Error creating File from image data:', e);
+        imageUrl = '';
+      }
     }
     
     setFormData({
