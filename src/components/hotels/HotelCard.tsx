@@ -11,18 +11,20 @@ interface HotelCardProps {
 }
 
 const amenityIcons: { [key: string]: any } = {
-  'Pool': Waves, // Changed from Pool to Waves icon
+  'Pool': Waves,
   'Free Wi-Fi': Wifi,
   'Restaurant': Utensils,
   'Room Service': Bed,
 };
 
 export const HotelCard = ({ hotel, selectedHotel, onSelect }: HotelCardProps) => {
+  const imageUrl = typeof hotel.image === 'string' ? hotel.image : URL.createObjectURL(hotel.image);
+
   return (
     <Card className="overflow-hidden transition-all duration-300 hover:shadow-lg transform hover:-translate-y-1">
       <div className="relative h-48">
         <img
-          src={hotel.image}
+          src={imageUrl}
           alt={hotel.name}
           className="w-full h-full object-cover"
         />

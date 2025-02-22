@@ -37,9 +37,11 @@ export const addHotel = createAsyncThunk('hotels/addHotel', async (hotelData: Om
   const formData = new FormData();
   Object.entries(hotelData).forEach(([key, value]) => {
     if (key === 'amenities') {
-      formData.append('amenities', JSON.stringify(value));
-    } else {
+      formData.append(key, JSON.stringify(value));
+    } else if (key === 'image' && value instanceof File) {
       formData.append(key, value);
+    } else {
+      formData.append(key, String(value));
     }
   });
   
@@ -51,9 +53,11 @@ export const updateHotel = createAsyncThunk('hotels/updateHotel', async (hotel: 
   const formData = new FormData();
   Object.entries(hotel).forEach(([key, value]) => {
     if (key === 'amenities') {
-      formData.append('amenities', JSON.stringify(value));
-    } else {
+      formData.append(key, JSON.stringify(value));
+    } else if (key === 'image' && value instanceof File) {
       formData.append(key, value);
+    } else {
+      formData.append(key, String(value));
     }
   });
   
