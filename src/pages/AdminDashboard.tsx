@@ -1,7 +1,5 @@
-
 import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { AppDispatch, RootState } from '../store/store';
 import { fetchHotels, addHotel, updateHotel, deleteHotel } from '../store/hotelSlice';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -28,8 +26,8 @@ interface FormData {
 }
 
 const AdminDashboard = () => {
-  const dispatch = useDispatch<AppDispatch>();
-  const { hotels } = useSelector((state: RootState) => state.hotels);
+  const dispatch = useDispatch();
+  const { hotels } = useSelector((state) => state.hotels);
   const [editingHotel, setEditingHotel] = useState<number | null>(null);
   const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState('');
@@ -141,29 +139,12 @@ const AdminDashboard = () => {
   const handleEdit = (hotel: Hotel) => {
     setEditingHotel(hotel.id);
     
-    let imageUrl = '';
-    if (typeof hotel.image === 'string') {
-      imageUrl = hotel.image;
-    } else if (hotel.image instanceof File) {
-      imageUrl = URL.createObjectURL(hotel.image);
-    } else if (hotel.image && typeof hotel.image === 'object' && 'type' in hotel.image) {
-      // Handle File-like object from Redux store
-      try {
-        const { name = 'file', type = 'application/octet-stream' } = hotel.image as any;
-        const file = new File([hotel.image], name, { type });
-        imageUrl = URL.createObjectURL(file);
-      } catch (e) {
-        console.error('Error creating File from image data:', e);
-        imageUrl = '';
-      }
-    }
-    
     setFormData({
       name: hotel.name,
       description: hotel.description,
       price: hotel.price.toString(),
       image: null,
-      imagePreview: imageUrl,
+      imagePreview: hotel.image,
       location: hotel.location,
       amenities: hotel.amenities.join(', '),
       rating: hotel.rating.toString(),

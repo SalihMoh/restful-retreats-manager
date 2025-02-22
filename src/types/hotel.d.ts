@@ -4,7 +4,7 @@ export interface Hotel {
   name: string;
   description: string;
   price: number;
-  image: string | File;
+  image: string;
   location: string;
   rating: number;
   amenities: string[];
