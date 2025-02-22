@@ -1,19 +1,7 @@
 
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import api from '../lib/axios';
-
-interface Booking {
-  id: number;
-  userId: number;
-  hotelId: number;
-  checkIn: string;
-  checkOut: string;
-  totalPrice: number;
-  status: string;
-  guestCount: number;
-  specialRequests?: string;
-  createdAt: string;
-}
+import { Booking } from '@/types/hotel';
 
 interface BookingState {
   bookings: Booking[];
@@ -35,16 +23,12 @@ export const fetchUserBookings = createAsyncThunk(
   }
 );
 
+type CreateBookingData = Omit<Booking, 'id'>;
+
 export const createBooking = createAsyncThunk(
   'bookings/createBooking',
-  async (bookingData: Omit<Booking, 'id' | 'status' | 'createdAt'>) => {
-    const newBooking = {
-      ...bookingData,
-      status: 'confirmed',
-      createdAt: new Date().toISOString().split('T')[0],
-      id: Date.now(),
-    };
-    const response = await api.post('/bookings', newBooking);
+  async (bookingData: CreateBookingData) => {
+    const response = await api.post('/bookings', bookingData);
     return response.data;
   }
 );

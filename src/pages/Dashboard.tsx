@@ -48,27 +48,27 @@ const Dashboard = () => {
   }) => {
     if (!selectedHotel || !user) return;
 
-    try {
-      await dispatch(createBooking({
-        userId: user.id,
-        hotelId: selectedHotel,
-        checkIn: bookingData.checkInDate.toISOString().split('T')[0],
-        checkOut: bookingData.checkOutDate.toISOString().split('T')[0],
-        totalPrice: bookingData.totalPrice,
-        guestCount: bookingData.guestCount,
-        specialRequests: bookingData.specialRequests,
-        status: 'confirmed',
-        createdAt: new Date().toISOString().split('T')[0],
-        roomType: bookingData.roomType,
-        paymentStatus: 'pending',
-        guestDetails: bookingData.guestDetails
-      })).unwrap();
+    const newBooking: Omit<Booking, 'id'> = {
+      userId: user.id,
+      hotelId: selectedHotel,
+      checkIn: bookingData.checkInDate.toISOString().split('T')[0],
+      checkOut: bookingData.checkOutDate.toISOString().split('T')[0],
+      totalPrice: bookingData.totalPrice,
+      guestCount: bookingData.guestCount,
+      specialRequests: bookingData.specialRequests,
+      status: 'confirmed',
+      createdAt: new Date().toISOString().split('T')[0],
+      roomType: bookingData.roomType,
+      paymentStatus: 'pending',
+      guestDetails: bookingData.guestDetails
+    };
 
+    try {
+      await dispatch(createBooking(newBooking)).unwrap();
       toast({
         title: "Success",
         description: "Booking confirmed successfully!",
       });
-
       setSelectedHotel(null);
     } catch (error) {
       toast({

@@ -140,12 +140,18 @@ const AdminDashboard = () => {
 
   const handleEdit = (hotel: Hotel) => {
     setEditingHotel(hotel.id);
+    const imageUrl = typeof hotel.image === 'string' 
+      ? hotel.image 
+      : hotel.image instanceof File 
+        ? URL.createObjectURL(hotel.image)
+        : '';
+        
     setFormData({
       name: hotel.name,
       description: hotel.description,
       price: hotel.price.toString(),
       image: null,
-      imagePreview: typeof hotel.image === 'string' ? hotel.image : URL.createObjectURL(hotel.image),
+      imagePreview: imageUrl,
       location: hotel.location,
       amenities: hotel.amenities.join(', '),
       rating: hotel.rating.toString(),
