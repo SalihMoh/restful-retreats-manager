@@ -8,6 +8,7 @@ import { HotelCard } from '@/components/hotels/HotelCard';
 import { BookingForm } from '@/components/bookings/BookingForm';
 import { BookingsList } from '@/components/bookings/BookingsList';
 import { useToast } from '@/hooks/use-toast';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const Dashboard = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -67,31 +68,42 @@ const Dashboard = () => {
   };
 
   return (
-    <div className="min-h-screen bg-secondary p-8">
-      <div className="max-w-7xl mx-auto space-y-8">
-        <h1 className="text-4xl font-bold text-center mb-12">Welcome, {user?.name}</h1>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {hotels.map((hotel) => (
-            <HotelCard
-              key={hotel.id}
-              hotel={hotel}
-              selectedHotel={selectedHotel}
-              onSelect={setSelectedHotel}
-            />
-          ))}
-        </div>
-
-        {selectedHotel && (
-          <BookingForm
-            selectedHotel={selectedHotel}
-            onSubmit={handleBooking}
-            calculateTotalPrice={calculateTotalPrice}
-          />
-        )}
-
-        <BookingsList bookings={bookings} hotels={hotels} />
+    <div className="container mx-auto px-4 py-8 space-y-8">
+      <div className="text-center mb-12">
+        <h1 className="text-4xl font-bold mb-4">Welcome, {user?.name}</h1>
+        <p className="text-muted-foreground">Find your perfect stay from our curated collection</p>
       </div>
+
+      <Tabs defaultValue="hotels" className="w-full">
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value="hotels">Available Hotels</TabsTrigger>
+          <TabsTrigger value="bookings">Your Bookings</TabsTrigger>
+        </TabsList>
+        <TabsContent value="hotels" className="space-y-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {hotels.map((hotel) => (
+              <HotelCard
+                key={hotel.id}
+                hotel={hotel}
+                selectedHotel={selectedHotel}
+                onSelect={setSelectedHotel}
+              />
+            ))}
+          </div>
+          {selectedHotel && (
+            <div className="mt-8">
+              <BookingForm
+                selectedHotel={selectedHotel}
+                onSubmit={handleBooking}
+                calculateTotalPrice={calculateTotalPrice}
+              />
+            </div>
+          )}
+        </TabsContent>
+        <TabsContent value="bookings">
+          <BookingsList bookings={bookings} hotels={hotels} />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };
