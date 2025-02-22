@@ -1,7 +1,6 @@
 
 import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { AppDispatch, RootState } from '../store/store';
 import { fetchHotels, addHotel, updateHotel, deleteHotel } from '../store/hotelSlice';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -10,30 +9,22 @@ import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { Search } from 'lucide-react';
 import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
-  PieChart,
-  Pie,
-  Cell
+  LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend,
+  ResponsiveContainer, PieChart, Pie, Cell
 } from 'recharts';
 
 const AdminDashboard = () => {
-  const dispatch = useDispatch<AppDispatch>();
-  const { hotels } = useSelector((state: RootState) => state.hotels);
-  const [editingHotel, setEditingHotel] = useState<number | null>(null);
+  const dispatch = useDispatch();
+  const { hotels } = useSelector((state) => state.hotels);
+  const [editingHotel, setEditingHotel] = useState(null);
   const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState('');
   const [formData, setFormData] = useState({
     name: '',
     description: '',
     price: '',
-    image: '',
+    image: null,
+    imagePreview: '',
     location: '',
     amenities: '',
     rating: '',
@@ -44,9 +35,18 @@ const AdminDashboard = () => {
     dispatch(fetchHotels());
   }, [dispatch]);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+  const handleInputChange = (e) => {
+    const { name, value, type, files } = e.target;
+    if (type === 'file') {
+      const file = files[0];
+      setFormData(prev => ({
+        ...prev,
+        image: file,
+        imagePreview: URL.createObjectURL(file)
+      }));
+    } else {
+      setFormData(prev => ({ ...prev, [name]: value }));
+    }
   };
 
   const resetForm = () => {
@@ -54,7 +54,8 @@ const AdminDashboard = () => {
       name: '',
       description: '',
       price: '',
-      image: '',
+      image: null,
+      imagePreview: '',
       location: '',
       amenities: '',
       rating: '',
@@ -63,7 +64,7 @@ const AdminDashboard = () => {
     setEditingHotel(null);
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const hotelData = {
       name: formData.name,
@@ -100,13 +101,14 @@ const AdminDashboard = () => {
     }
   };
 
-  const handleEdit = (hotel: any) => {
+  const handleEdit = (hotel) => {
     setEditingHotel(hotel.id);
     setFormData({
       name: hotel.name,
       description: hotel.description,
       price: hotel.price.toString(),
-      image: hotel.image,
+      image: null,
+      imagePreview: hotel.image,
       location: hotel.location,
       amenities: hotel.amenities.join(', '),
       rating: hotel.rating.toString(),
@@ -114,19 +116,21 @@ const AdminDashboard = () => {
     });
   };
 
-  const handleDelete = async (id: number) => {
-    try {
-      await dispatch(deleteHotel(id)).unwrap();
-      toast({
-        title: "Success",
-        description: "Hotel deleted successfully!",
-      });
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to delete hotel. Please try again.",
-        variant: "destructive",
-      });
+  const handleDelete = async (id) => {
+    if (window.confirm('Are you sure you want to delete this hotel?')) {
+      try {
+        await dispatch(deleteHotel(id)).unwrap();
+        toast({
+          title: "Success",
+          description: "Hotel deleted successfully!",
+        });
+      } catch (error) {
+        toast({
+          title: "Error",
+          description: "Failed to delete hotel. Please try again.",
+          variant: "destructive",
+        });
+      }
     }
   };
 
@@ -276,10 +280,11 @@ const AdminDashboard = () => {
                 />
                 <Input
                   name="image"
-                  value={formData.image}
+                  type="file"
                   onChange={handleInputChange}
-                  placeholder="Image URL"
-                  required
+                  accept="image/*"
+                  className="cursor-pointer"
+                  required={!editingHotel}
                 />
                 <Input
                   name="rating"
@@ -302,6 +307,15 @@ const AdminDashboard = () => {
                   required
                 />
               </div>
+              {formData.imagePreview && (
+                <div className="mt-2">
+                  <img
+                    src={formData.imagePreview}
+                    alt="Preview"
+                    className="w-full max-w-md h-48 object-cover rounded-md mx-auto"
+                  />
+                </div>
+              )}
               <Textarea
                 name="description"
                 value={formData.description}
