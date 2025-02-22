@@ -1,7 +1,7 @@
 
-import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
-const BookingsList = ({ bookings, hotels }) => {
+export const BookingsList = ({ bookings, hotels }) => {
   if (bookings.length === 0) return null;
 
   return (
@@ -54,5 +54,3 @@ const BookingsList = ({ bookings, hotels }) => {
     </Card>
   );
 };
-
-export default BookingsList;
