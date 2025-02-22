@@ -2,7 +2,7 @@
 import { Hotel } from '@/types/hotel';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Star, Wifi, Pool, Utensils, Bed } from 'lucide-react';
+import { Star, Wifi, Utensils, Bed, Waves } from 'lucide-react';
 
 interface HotelCardProps {
   hotel: Hotel;
@@ -11,7 +11,7 @@ interface HotelCardProps {
 }
 
 const amenityIcons: { [key: string]: any } = {
-  'Pool': Pool,
+  'Pool': Waves, // Changed from Pool to Waves icon
   'Free Wi-Fi': Wifi,
   'Restaurant': Utensils,
   'Room Service': Bed,
