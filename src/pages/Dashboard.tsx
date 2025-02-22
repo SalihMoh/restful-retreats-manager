@@ -9,6 +9,7 @@ import { BookingForm } from '@/components/bookings/BookingForm';
 import { BookingsList } from '@/components/bookings/BookingsList';
 import { useToast } from '@/hooks/use-toast';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Booking } from '@/types/hotel';
 
 const Dashboard = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -38,6 +39,12 @@ const Dashboard = () => {
     guestCount: number;
     specialRequests: string;
     totalPrice: number;
+    roomType: string;
+    guestDetails: {
+      name: string;
+      email: string;
+      phone: string;
+    };
   }) => {
     if (!selectedHotel || !user) return;
 
@@ -49,7 +56,12 @@ const Dashboard = () => {
         checkOut: bookingData.checkOutDate.toISOString().split('T')[0],
         totalPrice: bookingData.totalPrice,
         guestCount: bookingData.guestCount,
-        specialRequests: bookingData.specialRequests
+        specialRequests: bookingData.specialRequests,
+        status: 'confirmed',
+        createdAt: new Date().toISOString().split('T')[0],
+        roomType: bookingData.roomType,
+        paymentStatus: 'pending',
+        guestDetails: bookingData.guestDetails
       })).unwrap();
 
       toast({
@@ -101,7 +113,7 @@ const Dashboard = () => {
           )}
         </TabsContent>
         <TabsContent value="bookings">
-          <BookingsList bookings={bookings} hotels={hotels} />
+          <BookingsList bookings={bookings as Booking[]} hotels={hotels} />
         </TabsContent>
       </Tabs>
     </div>

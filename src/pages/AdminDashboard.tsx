@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '../store/store';
@@ -93,6 +94,15 @@ const AdminDashboard = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!formData.image) {
+      toast({
+        title: "Error",
+        description: "Please select an image",
+        variant: "destructive",
+      });
+      return;
+    }
+
     const hotelData = {
       name: formData.name,
       description: formData.description,
@@ -135,7 +145,7 @@ const AdminDashboard = () => {
       description: hotel.description,
       price: hotel.price.toString(),
       image: null,
-      imagePreview: hotel.image,
+      imagePreview: typeof hotel.image === 'string' ? hotel.image : URL.createObjectURL(hotel.image),
       location: hotel.location,
       amenities: hotel.amenities.join(', '),
       rating: hotel.rating.toString(),
