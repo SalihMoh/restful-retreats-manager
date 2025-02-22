@@ -14,6 +14,7 @@ import {
   ResponsiveContainer, PieChart, Pie, Cell
 } from 'recharts';
 import { Hotel } from '@/types/hotel';
+import { WritableDraft } from 'immer/dist/internal';
 
 interface FormData {
   name: string;
@@ -140,12 +141,19 @@ const AdminDashboard = () => {
 
   const handleEdit = (hotel: Hotel) => {
     setEditingHotel(hotel.id);
-    const imageUrl = typeof hotel.image === 'string' 
-      ? hotel.image 
-      : hotel.image instanceof File 
-        ? URL.createObjectURL(hotel.image)
-        : '';
-        
+    
+    let imageUrl = '';
+    if (typeof hotel.image === 'string') {
+      imageUrl = hotel.image;
+    } else if (hotel.image instanceof File) {
+      imageUrl = URL.createObjectURL(hotel.image);
+    } else if (hotel.image && 'type' in (hotel.image as WritableDraft<File>)) {
+      // Handle WritableDraft<File> case
+      const fileData = hotel.image as unknown as WritableDraft<File>;
+      const file = new File([fileData], fileData.name, { type: fileData.type });
+      imageUrl = URL.createObjectURL(file);
+    }
+    
     setFormData({
       name: hotel.name,
       description: hotel.description,
