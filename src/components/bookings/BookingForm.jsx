@@ -2,11 +2,11 @@
 import { useState } from 'react';
 import DatePicker from 'react-datepicker';
 import "react-datepicker/dist/react-datepicker.css";
-import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
-import { Button } from '../ui/button';
-import { Input } from '../ui/input';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 
-const BookingForm = ({ selectedHotel, onSubmit, calculateTotalPrice }) => {
+export const BookingForm = ({ selectedHotel, onSubmit, calculateTotalPrice }) => {
   const [checkInDate, setCheckInDate] = useState(null);
   const [checkOutDate, setCheckOutDate] = useState(null);
   const [guestCount, setGuestCount] = useState(1);
@@ -100,5 +100,3 @@ const BookingForm = ({ selectedHotel, onSubmit, calculateTotalPrice }) => {
     </Card>
   );
 };
-
-export default BookingForm;
