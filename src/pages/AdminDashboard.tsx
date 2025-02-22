@@ -1,6 +1,6 @@
-
 import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import { AppDispatch, RootState } from '../store/store';
 import { fetchHotels, addHotel, updateHotel, deleteHotel } from '../store/hotelSlice';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -12,14 +12,27 @@ import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend,
   ResponsiveContainer, PieChart, Pie, Cell
 } from 'recharts';
+import { Hotel } from '@/types/hotel';
+
+interface FormData {
+  name: string;
+  description: string;
+  price: string;
+  image: File | null;
+  imagePreview: string;
+  location: string;
+  amenities: string;
+  rating: string;
+  availableRooms: string;
+}
 
 const AdminDashboard = () => {
-  const dispatch = useDispatch();
-  const { hotels } = useSelector((state) => state.hotels);
-  const [editingHotel, setEditingHotel] = useState(null);
+  const dispatch = useDispatch<AppDispatch>();
+  const { hotels } = useSelector((state: RootState) => state.hotels);
+  const [editingHotel, setEditingHotel] = useState<number | null>(null);
   const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState('');
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<FormData>({
     name: '',
     description: '',
     price: '',
@@ -32,18 +45,32 @@ const AdminDashboard = () => {
   });
 
   useEffect(() => {
-    dispatch(fetchHotels());
-  }, [dispatch]);
+    const fetchData = async () => {
+      try {
+        await dispatch(fetchHotels()).unwrap();
+      } catch (error) {
+        toast({
+          title: "Error",
+          description: "Failed to fetch hotels",
+          variant: "destructive",
+        });
+      }
+    };
+    fetchData();
+  }, [dispatch, toast]);
 
-  const handleInputChange = (e) => {
-    const { name, value, type, files } = e.target;
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value, type } = e.target;
     if (type === 'file') {
-      const file = files[0];
-      setFormData(prev => ({
-        ...prev,
-        image: file,
-        imagePreview: URL.createObjectURL(file)
-      }));
+      const fileInput = e.target as HTMLInputElement;
+      const file = fileInput.files?.[0];
+      if (file) {
+        setFormData(prev => ({
+          ...prev,
+          image: file,
+          imagePreview: URL.createObjectURL(file)
+        }));
+      }
     } else {
       setFormData(prev => ({ ...prev, [name]: value }));
     }
@@ -64,7 +91,7 @@ const AdminDashboard = () => {
     setEditingHotel(null);
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const hotelData = {
       name: formData.name,
@@ -101,7 +128,7 @@ const AdminDashboard = () => {
     }
   };
 
-  const handleEdit = (hotel) => {
+  const handleEdit = (hotel: Hotel) => {
     setEditingHotel(hotel.id);
     setFormData({
       name: hotel.name,
@@ -116,7 +143,7 @@ const AdminDashboard = () => {
     });
   };
 
-  const handleDelete = async (id) => {
+  const handleDelete = async (id: number) => {
     if (window.confirm('Are you sure you want to delete this hotel?')) {
       try {
         await dispatch(deleteHotel(id)).unwrap();
