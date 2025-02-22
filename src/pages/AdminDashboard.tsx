@@ -1,5 +1,7 @@
+
 import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import { AppDispatch, RootState } from '../store/store';
 import { fetchHotels, addHotel, updateHotel, deleteHotel } from '../store/hotelSlice';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -26,8 +28,8 @@ interface FormData {
 }
 
 const AdminDashboard = () => {
-  const dispatch = useDispatch();
-  const { hotels } = useSelector((state) => state.hotels);
+  const dispatch = useDispatch<AppDispatch>();
+  const { hotels } = useSelector((state: RootState) => state.hotels);
   const [editingHotel, setEditingHotel] = useState<number | null>(null);
   const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState('');
@@ -92,7 +94,7 @@ const AdminDashboard = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.image) {
+    if (!formData.image && !editingHotel) {
       toast({
         title: "Error",
         description: "Please select an image",
@@ -105,7 +107,7 @@ const AdminDashboard = () => {
       name: formData.name,
       description: formData.description,
       price: parseFloat(formData.price),
-      image: formData.image,
+      image: formData.image || formData.imagePreview,
       location: formData.location,
       amenities: formData.amenities.split(',').map(item => item.trim()),
       rating: parseFloat(formData.rating),
@@ -138,7 +140,6 @@ const AdminDashboard = () => {
 
   const handleEdit = (hotel: Hotel) => {
     setEditingHotel(hotel.id);
-    
     setFormData({
       name: hotel.name,
       description: hotel.description,
