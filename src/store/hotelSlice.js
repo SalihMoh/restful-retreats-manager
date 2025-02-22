@@ -16,10 +16,10 @@ export const fetchHotels = createAsyncThunk('hotels/fetchHotels', async () => {
 export const addHotel = createAsyncThunk('hotels/addHotel', async (hotelData) => {
   const formData = new FormData();
   Object.keys(hotelData).forEach(key => {
-    if (key === 'image') {
-      formData.append('image', hotelData.image);
+    if (key === 'image' && hotelData[key] instanceof File) {
+      formData.append('image', hotelData[key]);
     } else if (key === 'amenities') {
-      formData.append('amenities', JSON.stringify(hotelData.amenities));
+      formData.append('amenities', JSON.stringify(hotelData[key]));
     } else {
       formData.append(key, hotelData[key]);
     }
@@ -29,19 +29,19 @@ export const addHotel = createAsyncThunk('hotels/addHotel', async (hotelData) =>
   return response.data;
 });
 
-export const updateHotel = createAsyncThunk('hotels/updateHotel', async (hotel) => {
+export const updateHotel = createAsyncThunk('hotels/updateHotel', async ({ id, ...hotelData }) => {
   const formData = new FormData();
-  Object.keys(hotel).forEach(key => {
-    if (key === 'image' && hotel.image instanceof File) {
-      formData.append('image', hotel.image);
+  Object.keys(hotelData).forEach(key => {
+    if (key === 'image' && hotelData[key] instanceof File) {
+      formData.append('image', hotelData[key]);
     } else if (key === 'amenities') {
-      formData.append('amenities', JSON.stringify(hotel.amenities));
+      formData.append('amenities', JSON.stringify(hotelData[key]));
     } else {
-      formData.append(key, hotel[key]);
+      formData.append(key, hotelData[key]);
     }
   });
   
-  const response = await api.put(`/hotels/${hotel.id}`, formData);
+  const response = await api.put(`/hotels/${id}`, formData);
   return response.data;
 });
 

@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '../store/store';
@@ -107,7 +106,6 @@ const AdminDashboard = () => {
       name: formData.name,
       description: formData.description,
       price: parseFloat(formData.price),
-      image: formData.image || formData.imagePreview,
       location: formData.location,
       amenities: formData.amenities.split(',').map(item => item.trim()),
       rating: parseFloat(formData.rating),
@@ -116,13 +114,22 @@ const AdminDashboard = () => {
 
     try {
       if (editingHotel) {
-        await dispatch(updateHotel({ id: editingHotel, ...hotelData })).unwrap();
+        const updateData = {
+          ...hotelData,
+          id: editingHotel,
+          image: formData.image || formData.imagePreview,
+        };
+        const response = await dispatch(updateHotel(updateData)).unwrap();
         toast({
           title: "Success",
           description: "Hotel updated successfully!",
         });
       } else {
-        await dispatch(addHotel(hotelData)).unwrap();
+        const addData = {
+          ...hotelData,
+          image: formData.image as File,
+        };
+        await dispatch(addHotel(addData)).unwrap();
         toast({
           title: "Success",
           description: "Hotel added successfully!",
