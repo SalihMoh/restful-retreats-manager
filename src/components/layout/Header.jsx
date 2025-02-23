@@ -28,7 +28,7 @@ const Header = () => {
               <>
                 <Button
                   variant="ghost"
-                  onClick={() => navigate(user.role === 'admin' ? '/admin' : '/dashboard')}
+                  onClick={() => navigate(user.role === 'admin' ? '/admin/hotels' : '/dashboard')}
                   className="flex items-center gap-2"
                 >
                   <Building2 className="h-4 w-4" />
@@ -37,7 +37,7 @@ const Header = () => {
                 {user.role === 'admin' && (
                   <Button
                     variant="ghost"
-                    onClick={() => navigate('/admin')}
+                    onClick={() => navigate('/admin/users')}
                     className="flex items-center gap-2"
                   >
                     <Users className="h-4 w-4" />
