@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { logout } from '../../store/authSlice';
 import { Button } from '../ui/button';
+import { Users, Building2 } from 'lucide-react';
 
 const Header = () => {
   const navigate = useNavigate();
@@ -28,9 +29,21 @@ const Header = () => {
                 <Button
                   variant="ghost"
                   onClick={() => navigate(user.role === 'admin' ? '/admin' : '/dashboard')}
+                  className="flex items-center gap-2"
                 >
-                  Dashboard
+                  <Building2 className="h-4 w-4" />
+                  {user.role === 'admin' ? 'Hotel Management' : 'Dashboard'}
                 </Button>
+                {user.role === 'admin' && (
+                  <Button
+                    variant="ghost"
+                    onClick={() => navigate('/admin')}
+                    className="flex items-center gap-2"
+                  >
+                    <Users className="h-4 w-4" />
+                    User Management
+                  </Button>
+                )}
                 {user.role === 'user' && (
                   <Button
                     variant="ghost"

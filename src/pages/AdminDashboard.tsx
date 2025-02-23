@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Hotel } from '@/components/admin/Hotel';
+import Hotel from '@/components/admin/Hotel';
 import UserManagement from '@/components/admin/UserManagement';
 import { Building2, Users } from 'lucide-react';
 
