@@ -5,18 +5,18 @@ import { RootState } from '../store/store';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
-  adminOnly?: boolean;
+  role: 'admin' | 'user';
 }
 
-const ProtectedRoute = ({ children, adminOnly = false }: ProtectedRouteProps) => {
+const ProtectedRoute = ({ children, role }: ProtectedRouteProps) => {
   const { user } = useSelector((state: RootState) => state.auth);
 
   if (!user) {
     return <Navigate to="/login" replace />;
   }
 
-  if (adminOnly && user.role !== 'admin') {
-    return <Navigate to="/dashboard" replace />;
+  if (user.role !== role) {
+    return <Navigate to={user.role === 'admin' ? '/admin' : '/dashboard'} replace />;
   }
 
   return <>{children}</>;
