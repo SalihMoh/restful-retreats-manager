@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchUsers, addUser, updateUser, deleteUser } from '@/store/userSlice';
@@ -11,7 +12,8 @@ import {
   DialogHeader, 
   DialogTitle, 
   DialogTrigger,
-  DialogFooter
+  DialogFooter,
+  DialogClose
 } from '@/components/ui/dialog';
 import {
   Pagination,
@@ -21,7 +23,7 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination";
-import { User, Lock, UserPlus, Search } from 'lucide-react';
+import { User, Lock, UserPlus, Search, Filter, Check, X } from 'lucide-react';
 import { AppDispatch, RootState } from '@/store/store';
 import { User as UserType } from '@/types/user';
 
@@ -32,6 +34,9 @@ const UserManagement = () => {
   const [editingUser, setEditingUser] = useState<number | null>(null);
   const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [roleFilter, setRoleFilter] = useState<string>('all');
+  const [showFilters, setShowFilters] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -137,11 +142,16 @@ const UserManagement = () => {
     }
   };
 
-  // Filter users based on search term
-  const filteredUsers = users.filter((user) => 
-    user.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-    user.email.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  // Filter users based on search term, status and role
+  const filteredUsers = users.filter((user) => {
+    const matchesSearch = user.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                         user.email.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    const matchesStatus = statusFilter === 'all' || user.status === statusFilter;
+    const matchesRole = roleFilter === 'all' || user.role === roleFilter;
+    
+    return matchesSearch && matchesStatus && matchesRole;
+  });
 
   // Pagination logic
   const indexOfLastItem = currentPage * itemsPerPage;
@@ -166,7 +176,7 @@ const UserManagement = () => {
     }
   };
 
-  const getStatusColor = (status: string) => {
+  const getStatusColor = (status: string | undefined) => {
     switch (status) {
       case 'active':
         return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200';
@@ -179,11 +189,18 @@ const UserManagement = () => {
     }
   };
 
+  const resetFilters = () => {
+    setStatusFilter('all');
+    setRoleFilter('all');
+    setSearchTerm('');
+    setCurrentPage(1);
+  };
+
   return (
     <div className="space-y-8">
       <h1 className="text-3xl font-bold">Gestion des Utilisateurs</h1>
 
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-between mb-6 flex-wrap gap-4">
         <div className="relative w-full max-w-sm">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
           <Input
@@ -193,152 +210,227 @@ const UserManagement = () => {
             className="pl-10"
           />
         </div>
-        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-          <DialogTrigger asChild>
-            <Button 
-              onClick={() => { resetForm(); setDialogOpen(true); }} 
-              className="flex items-center gap-2"
-            >
-              <UserPlus size={16} />
-              <span>Ajouter un utilisateur</span>
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="max-w-md">
-            <DialogHeader>
-              <DialogTitle>{editingUser ? 'Modifier l\'utilisateur' : 'Ajouter un nouvel utilisateur'}</DialogTitle>
-            </DialogHeader>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium mb-1">Nom</label>
-                  <Input 
-                    name="name" 
-                    value={formData.name} 
-                    onChange={handleInputChange} 
-                    required 
-                  />
+        
+        <div className="flex space-x-2">
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={() => setShowFilters(!showFilters)}
+            className="flex items-center gap-1"
+          >
+            <Filter size={16} />
+            Filtres
+          </Button>
+          
+          <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+            <DialogTrigger asChild>
+              <Button 
+                onClick={() => { resetForm(); setDialogOpen(true); }} 
+                className="flex items-center gap-2"
+              >
+                <UserPlus size={16} />
+                <span>Ajouter un utilisateur</span>
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-md">
+              <DialogHeader>
+                <DialogTitle>{editingUser ? 'Modifier l\'utilisateur' : 'Ajouter un nouvel utilisateur'}</DialogTitle>
+              </DialogHeader>
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Nom</label>
+                    <Input 
+                      name="name" 
+                      value={formData.name} 
+                      onChange={handleInputChange} 
+                      required 
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Email</label>
+                    <Input 
+                      name="email" 
+                      type="email"
+                      value={formData.email} 
+                      onChange={handleInputChange} 
+                      required 
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-1">
+                      {editingUser ? 'Nouveau mot de passe (laisser vide pour ne pas changer)' : 'Mot de passe'}
+                    </label>
+                    <Input 
+                      name="password" 
+                      type="password"
+                      value={formData.password} 
+                      onChange={handleInputChange} 
+                      required={!editingUser}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Rôle</label>
+                    <select
+                      name="role"
+                      value={formData.role}
+                      onChange={handleInputChange}
+                      className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                      required
+                    >
+                      <option value="user">Utilisateur</option>
+                      <option value="admin">Administrateur</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Statut</label>
+                    <select
+                      name="status"
+                      value={formData.status}
+                      onChange={handleInputChange}
+                      className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                      required
+                    >
+                      <option value="active">Actif</option>
+                      <option value="inactive">Inactif</option>
+                      <option value="suspended">Suspendu</option>
+                    </select>
+                  </div>
                 </div>
-                <div>
-                  <label className="block text-sm font-medium mb-1">Email</label>
-                  <Input 
-                    name="email" 
-                    type="email"
-                    value={formData.email} 
-                    onChange={handleInputChange} 
-                    required 
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-1">
-                    {editingUser ? 'Nouveau mot de passe (laisser vide pour ne pas changer)' : 'Mot de passe'}
-                  </label>
-                  <Input 
-                    name="password" 
-                    type="password"
-                    value={formData.password} 
-                    onChange={handleInputChange} 
-                    required={!editingUser}
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-1">Rôle</label>
-                  <select
-                    name="role"
-                    value={formData.role}
-                    onChange={handleInputChange}
-                    className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                    required
+                
+                <DialogFooter>
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    onClick={resetForm}
                   >
-                    <option value="user">Utilisateur</option>
-                    <option value="admin">Administrateur</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-1">Statut</label>
-                  <select
-                    name="status"
-                    value={formData.status}
-                    onChange={handleInputChange}
-                    className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                    required
-                  >
-                    <option value="active">Actif</option>
-                    <option value="inactive">Inactif</option>
-                    <option value="suspended">Suspendu</option>
-                  </select>
-                </div>
-              </div>
-              
-              <DialogFooter>
-                <Button 
-                  type="button" 
-                  variant="outline" 
-                  onClick={resetForm}
-                >
-                  Annuler
-                </Button>
-                <Button type="submit">
-                  {editingUser ? 'Mettre à jour' : 'Ajouter'}
-                </Button>
-              </DialogFooter>
-            </form>
-          </DialogContent>
-        </Dialog>
+                    Annuler
+                  </Button>
+                  <Button type="submit">
+                    {editingUser ? 'Mettre à jour' : 'Ajouter'}
+                  </Button>
+                </DialogFooter>
+              </form>
+            </DialogContent>
+          </Dialog>
+        </div>
       </div>
+      
+      {/* Advanced Filters */}
+      {showFilters && (
+        <Card className="mb-6">
+          <CardContent className="pt-6">
+            <div className="flex flex-wrap gap-4 items-end">
+              <div>
+                <label className="block text-sm font-medium mb-1">Statut</label>
+                <select
+                  value={statusFilter}
+                  onChange={(e) => setStatusFilter(e.target.value)}
+                  className="rounded-md border border-input bg-background px-3 py-2 text-sm"
+                >
+                  <option value="all">Tous les statuts</option>
+                  <option value="active">Actif</option>
+                  <option value="inactive">Inactif</option>
+                  <option value="suspended">Suspendu</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">Rôle</label>
+                <select
+                  value={roleFilter}
+                  onChange={(e) => setRoleFilter(e.target.value)}
+                  className="rounded-md border border-input bg-background px-3 py-2 text-sm"
+                >
+                  <option value="all">Tous les rôles</option>
+                  <option value="user">Utilisateur</option>
+                  <option value="admin">Administrateur</option>
+                </select>
+              </div>
+              <div className="ml-auto flex space-x-2 items-center">
+                <Button 
+                  size="sm" 
+                  variant="outline" 
+                  onClick={resetFilters} 
+                  className="flex items-center gap-1"
+                >
+                  <X size={16} />
+                  Réinitialiser
+                </Button>
+                <Button 
+                  size="sm" 
+                  onClick={() => setShowFilters(false)} 
+                  className="flex items-center gap-1"
+                >
+                  <Check size={16} />
+                  Appliquer
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {currentUsers.map((user) => (
-          <Card key={user.id} className="overflow-hidden hover:shadow-lg transition-shadow">
-            <CardHeader className="pb-2">
-              <div className="flex justify-between items-start">
-                <CardTitle className="flex items-center gap-2">
-                  <User className="h-5 w-5 text-primary" />
-                  {user.name}
-                </CardTitle>
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="text-sm">{user.email}</div>
-              
-              <div className="flex flex-wrap gap-2">
-                <span className={`px-2 py-1 rounded-full text-xs ${getRoleColor(user.role)}`}>
-                  {user.role === 'admin' ? 'Administrateur' : 'Utilisateur'}
-                </span>
+        {currentUsers.length > 0 ? (
+          currentUsers.map((user) => (
+            <Card key={user.id} className="overflow-hidden hover:shadow-lg transition-shadow">
+              <CardHeader className="pb-2">
+                <div className="flex justify-between items-start">
+                  <CardTitle className="flex items-center gap-2">
+                    <User className="h-5 w-5 text-primary" />
+                    {user.name}
+                  </CardTitle>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="text-sm">{user.email}</div>
                 
-                {user.status && (
-                  <span className={`px-2 py-1 rounded-full text-xs ${getStatusColor(user.status)}`}>
-                    {user.status === 'active' ? 'Actif' : 
-                     user.status === 'inactive' ? 'Inactif' : 'Suspendu'}
+                <div className="flex flex-wrap gap-2">
+                  <span className={`px-2 py-1 rounded-full text-xs ${getRoleColor(user.role)}`}>
+                    {user.role === 'admin' ? 'Administrateur' : 'Utilisateur'}
                   </span>
-                )}
-              </div>
-              
-              <div className="flex justify-between items-center pt-2">
-                <div className="text-xs text-muted-foreground">
-                  {user.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'Date non disponible'}
+                  
+                  {user.status && (
+                    <span className={`px-2 py-1 rounded-full text-xs ${getStatusColor(user.status)}`}>
+                      {user.status === 'active' ? 'Actif' : 
+                       user.status === 'inactive' ? 'Inactif' : 'Suspendu'}
+                    </span>
+                  )}
                 </div>
-                <div className="space-x-2">
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    onClick={() => handleEdit(user)}
-                    className="flex items-center gap-1"
-                  >
-                    <Lock className="h-3 w-3" />
-                    Modifier
-                  </Button>
-                  <Button 
-                    variant="destructive" 
-                    size="sm" 
-                    onClick={() => handleDelete(user.id)}
-                  >
-                    Supprimer
-                  </Button>
+                
+                <div className="flex justify-between items-center pt-2">
+                  <div className="text-xs text-muted-foreground">
+                    {user.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'Date non disponible'}
+                  </div>
+                  <div className="space-x-2">
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      onClick={() => handleEdit(user)}
+                      className="flex items-center gap-1"
+                    >
+                      <Lock className="h-3 w-3" />
+                      Modifier
+                    </Button>
+                    <Button 
+                      variant="destructive" 
+                      size="sm" 
+                      onClick={() => handleDelete(user.id)}
+                    >
+                      Supprimer
+                    </Button>
+                  </div>
                 </div>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
+              </CardContent>
+            </Card>
+          ))
+        ) : (
+          <div className="col-span-full text-center p-8 bg-muted rounded-lg">
+            <User className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+            <h3 className="text-lg font-medium mb-2">Aucun utilisateur trouvé</h3>
+            <p className="text-muted-foreground">Ajustez vos filtres ou ajoutez de nouveaux utilisateurs</p>
+          </div>
+        )}
       </div>
 
       {/* Pagination */}
@@ -384,8 +476,7 @@ const UserManagement = () => {
           </PaginationContent>
         </Pagination>
       )}
-    </div>
-  );
-};
 
-export default UserManagement;
+      {/* Statistics Card - New feature */}
+      <Card>
+        <CardHeader

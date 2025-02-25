@@ -7,4 +7,5 @@ export interface User {
   createdAt?: string;
   lastLogin?: string;
   status?: 'active' | 'inactive' | 'suspended';
+  password?: string; // Added password field as optional
 }
