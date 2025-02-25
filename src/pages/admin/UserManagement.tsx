@@ -479,4 +479,28 @@ const UserManagement = () => {
 
       {/* Statistics Card - New feature */}
       <Card>
-        <CardHeader
+        <CardHeader>
+          <CardTitle>Statistiques des utilisateurs</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="bg-primary/10 rounded-lg p-4">
+              <div className="text-xl font-bold">{users.length}</div>
+              <div className="text-sm text-muted-foreground">Total des utilisateurs</div>
+            </div>
+            <div className="bg-green-100 dark:bg-green-900/30 rounded-lg p-4">
+              <div className="text-xl font-bold">{users.filter(u => u.status === 'active').length}</div>
+              <div className="text-sm text-muted-foreground">Utilisateurs actifs</div>
+            </div>
+            <div className="bg-blue-100 dark:bg-blue-900/30 rounded-lg p-4">
+              <div className="text-xl font-bold">{users.filter(u => u.role === 'admin').length}</div>
+              <div className="text-sm text-muted-foreground">Administrateurs</div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+};
+
+export default UserManagement;
