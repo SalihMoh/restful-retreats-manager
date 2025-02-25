@@ -5,6 +5,8 @@ import "react-datepicker/dist/react-datepicker.css";
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Hotel } from '@/types/hotel';
 
 interface BookingFormProps {
   selectedHotel: number;
@@ -14,6 +16,12 @@ interface BookingFormProps {
     guestCount: number;
     specialRequests: string;
     totalPrice: number;
+    roomType: string;
+    guestDetails: {
+      name: string;
+      email: string;
+      phone: string;
+    };
   }) => void;
   calculateTotalPrice: (hotelId: number, start: Date, end: Date) => number;
 }
@@ -23,6 +31,10 @@ export const BookingForm = ({ selectedHotel, onSubmit, calculateTotalPrice }: Bo
   const [checkOutDate, setCheckOutDate] = useState<Date | null>(null);
   const [guestCount, setGuestCount] = useState(1);
   const [specialRequests, setSpecialRequests] = useState('');
+  const [roomType, setRoomType] = useState('standard');
+  const [guestName, setGuestName] = useState('');
+  const [guestEmail, setGuestEmail] = useState('');
+  const [guestPhone, setGuestPhone] = useState('');
 
   const handleSubmit = () => {
     if (!checkInDate || !checkOutDate) return;
@@ -34,7 +46,13 @@ export const BookingForm = ({ selectedHotel, onSubmit, calculateTotalPrice }: Bo
       checkOutDate,
       guestCount,
       specialRequests,
-      totalPrice
+      totalPrice,
+      roomType,
+      guestDetails: {
+        name: guestName,
+        email: guestEmail,
+        phone: guestPhone
+      }
     });
 
     // Reset form
@@ -42,6 +60,10 @@ export const BookingForm = ({ selectedHotel, onSubmit, calculateTotalPrice }: Bo
     setCheckOutDate(null);
     setGuestCount(1);
     setSpecialRequests('');
+    setRoomType('standard');
+    setGuestName('');
+    setGuestEmail('');
+    setGuestPhone('');
   };
 
   return (
@@ -89,8 +111,41 @@ export const BookingForm = ({ selectedHotel, onSubmit, calculateTotalPrice }: Bo
           />
         </div>
         <div>
+          <label className="block text-sm font-medium mb-2">Room Type</label>
+          <select
+            value={roomType}
+            onChange={(e) => setRoomType(e.target.value)}
+            className="w-full rounded-md border border-input px-3 py-2"
+          >
+            <option value="standard">Standard</option>
+            <option value="deluxe">Deluxe</option>
+            <option value="suite">Suite</option>
+          </select>
+        </div>
+        <div>
+          <label className="block text-sm font-medium mb-2">Guest Information</label>
+          <div className="space-y-2">
+            <Input
+              value={guestName}
+              onChange={(e) => setGuestName(e.target.value)}
+              placeholder="Full Name"
+            />
+            <Input
+              type="email"
+              value={guestEmail}
+              onChange={(e) => setGuestEmail(e.target.value)}
+              placeholder="Email"
+            />
+            <Input
+              value={guestPhone}
+              onChange={(e) => setGuestPhone(e.target.value)}
+              placeholder="Phone Number"
+            />
+          </div>
+        </div>
+        <div>
           <label className="block text-sm font-medium mb-2">Special Requests</label>
-          <Input
+          <Textarea
             value={specialRequests}
             onChange={(e) => setSpecialRequests(e.target.value)}
             placeholder="Any special requests?"
@@ -104,7 +159,7 @@ export const BookingForm = ({ selectedHotel, onSubmit, calculateTotalPrice }: Bo
         <Button
           onClick={handleSubmit}
           className="w-full"
-          disabled={!checkInDate || !checkOutDate}
+          disabled={!checkInDate || !checkOutDate || !guestName || !guestEmail || !guestPhone}
         >
           Confirm Booking
         </Button>
@@ -112,3 +167,5 @@ export const BookingForm = ({ selectedHotel, onSubmit, calculateTotalPrice }: Bo
     </Card>
   );
 };
+
+export default BookingForm;

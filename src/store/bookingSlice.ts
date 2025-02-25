@@ -1,5 +1,5 @@
 
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import api from '../lib/axios';
 import { Booking } from '@/types/hotel';
 
@@ -23,12 +23,16 @@ export const fetchUserBookings = createAsyncThunk(
   }
 );
 
-type CreateBookingData = Omit<Booking, 'id'>;
-
 export const createBooking = createAsyncThunk(
   'bookings/createBooking',
-  async (bookingData: CreateBookingData) => {
-    const response = await api.post('/bookings', bookingData);
+  async (bookingData: Omit<Booking, 'id'>) => {
+    const newBooking = {
+      ...bookingData,
+      status: 'confirmed',
+      createdAt: new Date().toISOString().split('T')[0],
+      id: Date.now(),
+    };
+    const response = await api.post('/bookings', newBooking);
     return response.data;
   }
 );
@@ -42,7 +46,7 @@ const bookingSlice = createSlice({
       .addCase(fetchUserBookings.pending, (state) => {
         state.status = 'loading';
       })
-      .addCase(fetchUserBookings.fulfilled, (state, action) => {
+      .addCase(fetchUserBookings.fulfilled, (state, action: PayloadAction<Booking[]>) => {
         state.status = 'succeeded';
         state.bookings = action.payload;
       })
@@ -50,7 +54,7 @@ const bookingSlice = createSlice({
         state.status = 'failed';
         state.error = action.error.message || 'Failed to fetch bookings';
       })
-      .addCase(createBooking.fulfilled, (state, action) => {
+      .addCase(createBooking.fulfilled, (state, action: PayloadAction<Booking>) => {
         state.bookings.push(action.payload);
       });
   },

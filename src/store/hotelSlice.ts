@@ -1,5 +1,5 @@
 
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import api from '../lib/axios';
 import { Hotel } from '@/types/hotel';
 
@@ -15,37 +15,29 @@ const initialState: HotelState = {
   error: null,
 };
 
-export const fetchHotels = createAsyncThunk('hotels/fetchHotels', async () => {
-  const response = await api.get('/hotels');
-  return response.data;
-});
+export const fetchHotels = createAsyncThunk(
+  'hotels/fetchHotels', 
+  async () => {
+    const response = await api.get('/hotels');
+    return response.data;
+  }
+);
 
-interface AddHotelData extends Omit<Hotel, 'id' | 'image'> {
-  image: File;
+interface HotelFormData {
+  id?: number;
+  name: string;
+  location: string;
+  price: number;
+  rating: number;
+  description: string;
+  image?: File;
+  availableRooms: number;
+  amenities: string[];
 }
 
-export const addHotel = createAsyncThunk('hotels/addHotel', async (hotelData: AddHotelData) => {
-  const formData = new FormData();
-  Object.keys(hotelData).forEach(key => {
-    if (key === 'image') {
-      formData.append('image', hotelData.image);
-    } else if (key === 'amenities') {
-      formData.append('amenities', JSON.stringify(hotelData.amenities));
-    } else {
-      formData.append(key, String(hotelData[key as keyof typeof hotelData]));
-    }
-  });
-  
-  const response = await api.post('/hotels', formData);
-  return response.data;
-});
-
-interface UpdateHotelData extends Omit<Hotel, 'image'> {
-  image: File | string;
-}
-
-export const updateHotel = createAsyncThunk('hotels/updateHotel', 
-  async ({ id, ...hotelData }: UpdateHotelData) => {
+export const addHotel = createAsyncThunk(
+  'hotels/addHotel', 
+  async (hotelData: HotelFormData) => {
     const formData = new FormData();
     Object.keys(hotelData).forEach(key => {
       if (key === 'image' && hotelData.image instanceof File) {
@@ -53,18 +45,41 @@ export const updateHotel = createAsyncThunk('hotels/updateHotel',
       } else if (key === 'amenities') {
         formData.append('amenities', JSON.stringify(hotelData.amenities));
       } else {
-        formData.append(key, String(hotelData[key as keyof typeof hotelData]));
+        formData.append(key, String(hotelData[key as keyof HotelFormData]));
+      }
+    });
+    
+    const response = await api.post('/hotels', formData);
+    return response.data;
+  }
+);
+
+export const updateHotel = createAsyncThunk(
+  'hotels/updateHotel', 
+  async ({ id, ...hotelData }: HotelFormData) => {
+    const formData = new FormData();
+    Object.keys(hotelData).forEach(key => {
+      if (key === 'image' && hotelData.image instanceof File) {
+        formData.append('image', hotelData.image);
+      } else if (key === 'amenities') {
+        formData.append('amenities', JSON.stringify(hotelData.amenities));
+      } else {
+        formData.append(key, String(hotelData[key as keyof Omit<HotelFormData, 'id'>]));
       }
     });
     
     const response = await api.put(`/hotels/${id}`, formData);
     return response.data;
-});
+  }
+);
 
-export const deleteHotel = createAsyncThunk('hotels/deleteHotel', async (id: number) => {
-  await api.delete(`/hotels/${id}`);
-  return id;
-});
+export const deleteHotel = createAsyncThunk(
+  'hotels/deleteHotel', 
+  async (id: number) => {
+    await api.delete(`/hotels/${id}`);
+    return id;
+  }
+);
 
 const hotelSlice = createSlice({
   name: 'hotels',
@@ -75,7 +90,7 @@ const hotelSlice = createSlice({
       .addCase(fetchHotels.pending, (state) => {
         state.status = 'loading';
       })
-      .addCase(fetchHotels.fulfilled, (state, action) => {
+      .addCase(fetchHotels.fulfilled, (state, action: PayloadAction<Hotel[]>) => {
         state.status = 'succeeded';
         state.hotels = action.payload;
       })
@@ -83,16 +98,16 @@ const hotelSlice = createSlice({
         state.status = 'failed';
         state.error = action.error.message || 'Failed to fetch hotels';
       })
-      .addCase(addHotel.fulfilled, (state, action) => {
+      .addCase(addHotel.fulfilled, (state, action: PayloadAction<Hotel>) => {
         state.hotels.push(action.payload);
       })
-      .addCase(updateHotel.fulfilled, (state, action) => {
+      .addCase(updateHotel.fulfilled, (state, action: PayloadAction<Hotel>) => {
         const index = state.hotels.findIndex((h) => h.id === action.payload.id);
         if (index !== -1) {
           state.hotels[index] = action.payload;
         }
       })
-      .addCase(deleteHotel.fulfilled, (state, action) => {
+      .addCase(deleteHotel.fulfilled, (state, action: PayloadAction<number>) => {
         state.hotels = state.hotels.filter((h) => h.id !== action.payload);
       });
   },

@@ -8,7 +8,13 @@ interface BookingsListProps {
 }
 
 export const BookingsList = ({ bookings, hotels }: BookingsListProps) => {
-  if (bookings.length === 0) return null;
+  if (bookings.length === 0) {
+    return (
+      <div className="text-center py-10">
+        <p className="text-muted-foreground">You don't have any bookings yet.</p>
+      </div>
+    );
+  }
 
   return (
     <Card className="mt-8">
@@ -60,3 +66,5 @@ export const BookingsList = ({ bookings, hotels }: BookingsListProps) => {
     </Card>
   );
 };
+
+export default BookingsList;
