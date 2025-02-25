@@ -228,4 +228,28 @@ const Bookings = () => {
                         setCurrentPage(number);
                       }}
                     >
-                      
+                      {number}
+                    </PaginationLink>
+                  </PaginationItem>
+                ))}
+                
+                <PaginationItem>
+                  <PaginationNext 
+                    href="#"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      setCurrentPage(prev => Math.min(prev + 1, totalPages));
+                    }}
+                    className={currentPage === totalPages ? 'pointer-events-none opacity-50' : ''}
+                  />
+                </PaginationItem>
+              </PaginationContent>
+            </Pagination>
+          )}
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default Bookings;
