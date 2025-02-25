@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchUsers, addUser, updateUser, deleteUser } from '@/store/userSlice';
@@ -37,8 +36,8 @@ const UserManagement = () => {
     name: '',
     email: '',
     password: '',
-    role: 'user',
-    status: 'active'
+    role: 'user' as 'admin' | 'user',
+    status: 'active' as 'active' | 'inactive' | 'suspended'
   });
 
   // Pagination state
@@ -51,7 +50,14 @@ const UserManagement = () => {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    setFormData(prev => {
+      if (name === 'role') {
+        return { ...prev, [name]: value as 'admin' | 'user' };
+      } else if (name === 'status') {
+        return { ...prev, [name]: value as 'active' | 'inactive' | 'suspended' };
+      }
+      return { ...prev, [name]: value };
+    });
   };
 
   const resetForm = () => {
@@ -71,7 +77,11 @@ const UserManagement = () => {
     
     try {
       const userData = {
-        ...formData
+        name: formData.name,
+        email: formData.email,
+        password: formData.password,
+        role: formData.role,
+        status: formData.status
       };
 
       if (editingUser) {

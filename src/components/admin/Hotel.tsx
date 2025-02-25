@@ -29,10 +29,10 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination";
-import { RootState } from '@/store/store';
+import { RootState, AppDispatch } from '@/store/store';
 
 const Hotel = () => {
-  const dispatch = useDispatch();
+  const dispatch = useDispatch<AppDispatch>();
   const { hotels } = useSelector((state: RootState) => state.hotels);
   const [editingHotel, setEditingHotel] = useState<number | null>(null);
   const { toast } = useToast();
@@ -106,13 +106,13 @@ const Hotel = () => {
       };
 
       if (editingHotel) {
-        await dispatch(updateHotel({ id: editingHotel, ...hotelData }));
+        await dispatch(updateHotel({ id: editingHotel, ...hotelData })).unwrap();
         toast({
           title: "Succès",
           description: "Hôtel mis à jour avec succès",
         });
       } else {
-        await dispatch(addHotel(hotelData));
+        await dispatch(addHotel(hotelData)).unwrap();
         toast({
           title: "Succès",
           description: "Nouvel hôtel ajouté avec succès",
@@ -147,7 +147,7 @@ const Hotel = () => {
   const handleDelete = async (id: number) => {
     if (window.confirm('Êtes-vous sûr de vouloir supprimer cet hôtel ?')) {
       try {
-        await dispatch(deleteHotel(id));
+        await dispatch(deleteHotel(id)).unwrap();
         toast({
           title: "Succès",
           description: "Hôtel supprimé avec succès",
