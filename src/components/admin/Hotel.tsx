@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchHotels, addHotel, updateHotel, deleteHotel } from '../../store/hotelSlice';
@@ -6,44 +7,68 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { Search } from 'lucide-react';
+import { Search, Plus } from 'lucide-react';
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend,
   ResponsiveContainer, PieChart, Pie, Cell
 } from 'recharts';
-import { AppDispatch, RootState } from '@/store/store';
+import { 
+  Dialog, 
+  DialogContent, 
+  DialogHeader, 
+  DialogTitle, 
+  DialogTrigger,
+  DialogFooter
+} from '@/components/ui/dialog';
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
+import { RootState } from '@/store/store';
 
 const Hotel = () => {
-  const dispatch = useDispatch<AppDispatch>();
+  const dispatch = useDispatch();
   const { hotels } = useSelector((state: RootState) => state.hotels);
-  const [editingHotel, setEditingHotel] = useState(null);
+  const [editingHotel, setEditingHotel] = useState<number | null>(null);
   const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState('');
   const [formData, setFormData] = useState({
     name: '',
     description: '',
     price: '',
-    image: null,
+    image: null as File | null,
     imagePreview: '',
     location: '',
     amenities: '',
     rating: '',
     availableRooms: ''
   });
+  
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(6);
+  const [dialogOpen, setDialogOpen] = useState(false);
 
   useEffect(() => {
     dispatch(fetchHotels());
   }, [dispatch]);
 
-  const handleInputChange = (e) => {
-    const { name, value, type, files } = e.target;
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value, type } = e.target as HTMLInputElement;
     if (type === 'file') {
-      const file = files[0];
-      setFormData(prev => ({
-        ...prev,
-        image: file,
-        imagePreview: URL.createObjectURL(file)
-      }));
+      const file = (e.target as HTMLInputElement).files?.[0];
+      if (file) {
+        setFormData(prev => ({
+          ...prev,
+          image: file,
+          imagePreview: URL.createObjectURL(file)
+        }));
+      }
     } else {
       setFormData(prev => ({ ...prev, [name]: value }));
     }
@@ -62,335 +87,8 @@ const Hotel = () => {
       availableRooms: ''
     });
     setEditingHotel(null);
+    setDialogOpen(false);
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const hotelData = {
-      name: formData.name,
-      description: formData.description,
-      price: parseFloat(formData.price),
-      image: formData.image,
-      location: formData.location,
-      amenities: formData.amenities.split(',').map(item => item.trim()),
-      rating: parseFloat(formData.rating),
-      availableRooms: parseInt(formData.availableRooms)
-    };
-
-    try {
-      if (editingHotel) {
-        await dispatch(updateHotel({ id: editingHotel, ...hotelData })).unwrap();
-        toast({
-          title: "Success",
-          description: "Hotel updated successfully!",
-        });
-      } else {
-        await dispatch(addHotel(hotelData)).unwrap();
-        toast({
-          title: "Success",
-          description: "Hotel added successfully!",
-        });
-      }
-      resetForm();
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to save hotel. Please try again.",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const handleEdit = (hotel) => {
-    setEditingHotel(hotel.id);
-    setFormData({
-      name: hotel.name,
-      description: hotel.description,
-      price: hotel.price.toString(),
-      image: null,
-      imagePreview: hotel.image,
-      location: hotel.location,
-      amenities: hotel.amenities.join(', '),
-      rating: hotel.rating.toString(),
-      availableRooms: hotel.availableRooms.toString()
-    });
-  };
-
-  const handleDelete = async (id) => {
-    if (window.confirm('Are you sure you want to delete this hotel?')) {
-      try {
-        await dispatch(deleteHotel(id)).unwrap();
-        toast({
-          title: "Success",
-          description: "Hotel deleted successfully!",
-        });
-      } catch (error) {
-        toast({
-          title: "Error",
-          description: "Failed to delete hotel. Please try again.",
-          variant: "destructive",
-        });
-      }
-    }
-  };
-
-  const filteredHotels = hotels.filter(hotel =>
-    hotel.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    hotel.location.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
-  const statistics = {
-    totalHotels: hotels.length,
-    averagePrice: hotels.reduce((acc, hotel) => acc + hotel.price, 0) / hotels.length,
-    totalRooms: hotels.reduce((acc, hotel) => acc + hotel.availableRooms, 0),
-    averageRating: hotels.reduce((acc, hotel) => acc + hotel.rating, 0) / hotels.length
-  };
-
-  const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'];
-
-  return (
-    <div className="space-y-6">
-      {/* Statistics Section */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        <Card>
-          <CardHeader>
-            <CardTitle>Total Hotels</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-3xl font-bold">{statistics.totalHotels}</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader>
-            <CardTitle>Average Price</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-3xl font-bold">${statistics.averagePrice.toFixed(2)}</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader>
-            <CardTitle>Total Rooms</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-3xl font-bold">{statistics.totalRooms}</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader>
-            <CardTitle>Average Rating</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-3xl font-bold">{statistics.averageRating.toFixed(1)} ⭐</p>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Charts Section */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-        <Card>
-          <CardHeader>
-            <CardTitle>Price Distribution</CardTitle>
-          </CardHeader>
-          <CardContent className="h-[300px]">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={hotels}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="name" />
-                <YAxis />
-                <Tooltip />
-                <Legend />
-                <Line type="monotone" dataKey="price" stroke="#8884d8" />
-              </LineChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader>
-            <CardTitle>Room Distribution</CardTitle>
-          </CardHeader>
-          <CardContent className="h-[300px]">
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie
-                  data={hotels}
-                  dataKey="availableRooms"
-                  nameKey="name"
-                  cx="50%"
-                  cy="50%"
-                  outerRadius={80}
-                  label
-                >
-                  {hotels.map((_, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                  ))}
-                </Pie>
-                <Tooltip />
-                <Legend />
-              </PieChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Search Bar */}
-      <div className="relative">
-        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-        <Input
-          type="text"
-          placeholder="Search hotels by name or location..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="pl-10"
-        />
-      </div>
-
-      {/* Hotel Form */}
-      <Card>
-        <CardHeader>
-          <CardTitle>{editingHotel ? 'Edit Hotel' : 'Add New Hotel'}</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Input
-                name="name"
-                value={formData.name}
-                onChange={handleInputChange}
-                placeholder="Hotel Name"
-                required
-              />
-              <Input
-                name="location"
-                value={formData.location}
-                onChange={handleInputChange}
-                placeholder="Location"
-                required
-              />
-              <Input
-                name="price"
-                type="number"
-                value={formData.price}
-                onChange={handleInputChange}
-                placeholder="Price per night"
-                required
-              />
-              <Input
-                name="image"
-                type="file"
-                onChange={handleInputChange}
-                accept="image/*"
-                className="cursor-pointer"
-                required={!editingHotel}
-              />
-              <Input
-                name="rating"
-                type="number"
-                min="0"
-                max="5"
-                step="0.1"
-                value={formData.rating}
-                onChange={handleInputChange}
-                placeholder="Rating (0-5)"
-                required
-              />
-              <Input
-                name="availableRooms"
-                type="number"
-                min="0"
-                value={formData.availableRooms}
-                onChange={handleInputChange}
-                placeholder="Available Rooms"
-                required
-              />
-            </div>
-            {formData.imagePreview && (
-              <div className="mt-2">
-                <img
-                  src={formData.imagePreview}
-                  alt="Preview"
-                  className="w-full max-w-md h-48 object-cover rounded-md mx-auto"
-                />
-              </div>
-            )}
-            <Textarea
-              name="description"
-              value={formData.description}
-              onChange={handleInputChange}
-              placeholder="Hotel Description"
-              className="min-h-[100px]"
-              required
-            />
-            <Input
-              name="amenities"
-              value={formData.amenities}
-              onChange={handleInputChange}
-              placeholder="Amenities (comma-separated)"
-              required
-            />
-            <div className="flex gap-2">
-              <Button type="submit">
-                {editingHotel ? 'Update Hotel' : 'Add Hotel'}
-              </Button>
-              {editingHotel && (
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={resetForm}
-                >
-                  Cancel
-                </Button>
-              )}
-            </div>
-          </form>
-        </CardContent>
-      </Card>
-
-      {/* Hotels List */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filteredHotels.map((hotel) => (
-          <Card key={hotel.id} className="hoverable-card overflow-hidden">
-            <img
-              src={hotel.image}
-              alt={hotel.name}
-              className="w-full h-48 object-cover"
-            />
-            <CardHeader>
-              <CardTitle>{hotel.name}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-muted-foreground mb-4">{hotel.description}</p>
-              <p className="text-lg font-semibold mb-2">${hotel.price} / night</p>
-              <p className="text-sm text-muted-foreground mb-4">
-                Rating: {hotel.rating} ⭐ | Available Rooms: {hotel.availableRooms}
-              </p>
-              <div className="flex flex-wrap gap-2 mb-4">
-                {hotel.amenities.map((amenity) => (
-                  <span
-                    key={amenity}
-                    className="px-2 py-1 bg-primary/10 text-primary rounded-full text-sm"
-                  >
-                    {amenity}
-                  </span>
-                ))}
-              </div>
-              <div className="flex gap-2">
-                <Button onClick={() => handleEdit(hotel)} variant="outline">
-                  Edit
-                </Button>
-                <Button
-                  onClick={() => handleDelete(hotel.id)}
-                  variant="destructive"
-                >
-                  Delete
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-    </div>
-  );
-};
-
-export default Hotel;
