@@ -8,6 +8,7 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
 import AdminDashboard from "./pages/AdminDashboard";
+import AboutPage from "./pages/About";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { QueryClient } from "@tanstack/react-query";
 import Header from "./components/layout/Header";
@@ -18,7 +19,7 @@ const queryClient = new QueryClient();
 
 const App = () => (
   <Provider store={store}>
-    <ThemeProvider defaultTheme="light">
+    <ThemeProvider defaultTheme="dark">
       <QueryClientProvider client={queryClient}>
         <div className="min-h-screen flex flex-col">
           <Toaster />
@@ -28,6 +29,7 @@ const App = () => (
               <Routes>
                 <Route path="/login" element={<Login />} />
                 <Route path="/register" element={<Register />} />
+                <Route path="/about" element={<AboutPage />} />
                 <Route
                   path="/dashboard"
                   element={
