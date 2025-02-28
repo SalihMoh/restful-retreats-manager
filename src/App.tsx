@@ -9,6 +9,7 @@ import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
 import AdminDashboard from "./pages/AdminDashboard";
 import AboutPage from "./pages/About";
+import Statistics from "./pages/Statistics";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { QueryClient } from "@tanstack/react-query";
 import Header from "./components/layout/Header";
@@ -30,6 +31,7 @@ const App = () => (
                 <Route path="/login" element={<Login />} />
                 <Route path="/register" element={<Register />} />
                 <Route path="/about" element={<AboutPage />} />
+                <Route path="/statistics" element={<Statistics />} />
                 <Route
                   path="/dashboard"
                   element={

@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import { RootState } from "@/store/store";
 import { useState } from "react";
-import { Menu, X, User, Hotel, LogOut, Shield, Info } from "lucide-react";
+import { Menu, X, User, Hotel, LogOut, Shield, Info, BarChart3 } from "lucide-react";
 
 const Header = () => {
   const { user } = useSelector((state: RootState) => state.auth);
@@ -34,6 +34,14 @@ const Header = () => {
             >
               <Info className="h-4 w-4" />
               <span>À propos</span>
+            </Link>
+            
+            <Link 
+              to="/statistics" 
+              className="text-muted-foreground hover:text-foreground flex items-center space-x-1 transition-colors"
+            >
+              <BarChart3 className="h-4 w-4" />
+              <span>Statistiques</span>
             </Link>
             
             {user ? (
@@ -103,6 +111,15 @@ const Header = () => {
             >
               <Info className="h-5 w-5" />
               <span>À propos</span>
+            </Link>
+            
+            <Link 
+              to="/statistics" 
+              className="flex items-center space-x-2 text-foreground hover:text-primary py-2 transition-colors"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              <BarChart3 className="h-5 w-5" />
+              <span>Statistiques</span>
             </Link>
             
             {user ? (
